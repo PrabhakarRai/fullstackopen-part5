@@ -1,8 +1,11 @@
 import React from 'react'
-const Blog = ({blog}) => (
+const Blog = ({ data }) => (
   <div>
-    {blog.title} {blog.author}
-  </div>  
+    <a href={data.url} target={'_blank'} rel={'noreferrer'}>{data.title}</a>
+    <span> by </span>
+    <i>{data.author}</i>
+    <span> [Total Likes: <b>{data.likes}</b>]</span>
+  </div>
 )
 
-export default Blog
+export default Blog;
