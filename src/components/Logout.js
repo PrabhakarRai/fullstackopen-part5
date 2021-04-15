@@ -2,7 +2,7 @@ import React from 'react';
 
 const Logout = ({ user, logoutHandler }) => (
   <>
-  <p>{user.name} logged in. </p>
+  <span>{user.name} logged in. </span>
   <button onClick={logoutHandler}>logout</button>
   </>
 );

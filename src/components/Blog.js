@@ -6,6 +6,6 @@ const Blog = ({ data }) => (
     <i>{data.author}</i>
     <span> [Total Likes: <b>{data.likes}</b>]</span>
   </div>
-)
+);
 
 export default Blog;
