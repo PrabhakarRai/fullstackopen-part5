@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import Homepage from './components/Homepage';
+import React, { useState, useEffect, useRef } from 'react';
 import blogService from './services/blogs';
 import loginService from './services/login';
 import messages from './components/Message';
+import Blog from './components/Blog';
+import Login from './components/Login';
+import Logout from './components/Logout';
+import Toggleable from './components/Toggleable';
+import BlogCreateForm from './components/BlogCreateForm';
 import './index.css';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [author, setAuthor] = useState('');
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  const blogFormRef = useRef();
 
   const setSuccessMsgWrapper = (msg, clearTime = 3000) => {
     setSuccessMsg(msg);
@@ -33,6 +34,7 @@ const App = () => {
     };
     fetchInitialBlogs();
   }, []);
+
   useEffect(() => {
     const loggedUserJson = window.localStorage.getItem('loggedInBlogUser');
     if (loggedUserJson) {
@@ -42,8 +44,7 @@ const App = () => {
     }
   }, []);
 
-  const loginSubmitHandler = async (e) => {
-    e.preventDefault();
+  const loginSubmitHandler = async (username, password) => {
     try {
       const user = await loginService.login({ username, password });
       blogService.setToken(user.token);
@@ -52,69 +53,90 @@ const App = () => {
       );
       setSuccessMsgWrapper('Logged in Successfully');
       setUser(user);
-      setUsername('');
-      setPassword('');
     } catch (e) {
       setErrorMsgWrapper('Login Error - incorrect username or password');
     }
   };
-  const blogSubmitHandler = async (e) => {
-    e.preventDefault();
+  const blogSubmitHandler = async (author, title, url) => {
     try {
       const res = await blogService.createBlog({ author, title, url });
       setBlogs(blogs.concat(res));
       setSuccessMsgWrapper(`Added - ${res.title} into blogs list.`);
-      setAuthor('');
-      setTitle('');
-      setUrl('');
+      blogFormRef.current.toggleVisibility();
     } catch (e) {
       setErrorMsgWrapper(e.message);
     }
   };
-  const logoutHandler = (e) => {
+  const updateLikesHandler = async (id, likes) => {
+    try {
+      const res = await blogService.updateLikes(id, likes);
+      const newBlogs = blogs.map(b => b.id !== res.id ? b : res).sort((a, b) => {
+        return b.likes - a.likes;
+      })
+      setBlogs(newBlogs);
+      setSuccessMsgWrapper(`Liked ${res.title} by ${res.author}`);
+    } catch (e) {
+      setErrorMsgWrapper(e.message);
+    }
+  };
+  const deleteBlogPost = async (id) => {
+    try {
+      const blog = blogs.find((b) => b.id === id);
+      if (blog) {
+        const conf = window.confirm(`Remove blog ${blog.title} by ${blog.author}`);
+        if (conf) {
+          const res = await blogService.deleteBlog(id);
+          if (res.status === 204) {
+            setBlogs(blogs.filter((b) => b.id !== id));
+            setSuccessMsgWrapper(`Deleted`);
+          } else {
+            setErrorMsgWrapper('Unknown error');
+          }
+        }
+      }
+    } catch (e) {
+      setErrorMsgWrapper(e.message);
+    }
+  };
+  const logoutHandler = () => {
     window.localStorage.removeItem('loggedInBlogUser');
     blogService.setToken(null);
     setUser(null);
     setSuccessMsgWrapper('Logged out successfully');
   }
-  const usernameHandler = (e) => {
-    setUsername(e.target.value);
-  };
-  const passwordHandler = (e) => {
-    setPassword(e.target.value);
-  };
-  const authorHandler = (e) => {
-    setAuthor(e.target.value);
-  };
-  const titleHandler = (e) => {
-    setTitle(e.target.value);
-  };
-  const urlHandler = (e) => {
-    setUrl(e.target.value);
-  };
-  
+  if (user === null) {
+    return (
+      <>
+      <messages.ErrorMessage msg={errorMsg} />
+      <messages.SuccessMessage msg={successMsg} />
+      <h1>Login to the application</h1>
+      <Login
+        formSubmitHandler={loginSubmitHandler}
+      />
+      </>
+    );
+  }
   return (
-    <>
-    <messages.ErrorMessage msg={errorMsg} />
-    <messages.SuccessMessage msg={successMsg} />
-    <Homepage
-      user={user}
-      blogs={blogs}
-      loginSubmitHandler={loginSubmitHandler}
-      username={username}
-      password={password}
-      usernameHandler={usernameHandler}
-      passwordHandler={passwordHandler}
-      logoutHandler={logoutHandler}
-      author={author}
-      title={title}
-      url={url}
-      authorHandler={authorHandler}
-      titleHandler={titleHandler}
-      urlHandler={urlHandler}
-      blogSubmitHandler={blogSubmitHandler}
-    />
-    </>
+    <div>
+      <messages.ErrorMessage msg={errorMsg} />
+      <messages.SuccessMessage msg={successMsg} />
+      <h2>Blogs</h2>
+      <Logout user={user} logoutHandler={logoutHandler} />
+      {blogs.map(blog =>
+        <Blog 
+          key={blog.id}
+          data={blog}
+          updateLikesHandler={updateLikesHandler}
+          deleteBlogHandler={deleteBlogPost}
+          username={user.username}
+        />
+      )}
+      <Toggleable buttonLable='Add New Blog' ref={blogFormRef}>
+        <BlogCreateForm
+          formSubmitHandler={blogSubmitHandler}
+        />
+      </Toggleable>
+    </div>
   );
 };
 

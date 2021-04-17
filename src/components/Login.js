@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const Login = ({ username, password, submitHandler, usernameHandler, passwordHandler }) => (
+const Login = ({ formSubmitHandler }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const usernameHandler = (e) => {
+    setUsername(e.target.value);
+  };
+  const passwordHandler = (e) => {
+    setPassword(e.target.value);
+  };
+  const submitHandler = (e) => {
+    e.preventDefault();
+    formSubmitHandler(username, password);
+    setUsername('');
+    setPassword('');
+  }
+  
+  return (
   <form onSubmit={submitHandler}>
     <div>
       Username:
         <input
+        required={true}
         type="text"
         value={username}
         name="username"
@@ -14,6 +31,7 @@ const Login = ({ username, password, submitHandler, usernameHandler, passwordHan
     <div>
       Password:
         <input
+        required={true}
         type="password"
         value={password}
         name="password"
@@ -22,6 +40,7 @@ const Login = ({ username, password, submitHandler, usernameHandler, passwordHan
     </div>
     <button type="submit">Login</button>
   </form>
-)
+  )
+}
 
 export default Login;
