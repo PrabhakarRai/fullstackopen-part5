@@ -20,12 +20,12 @@ const App = () => {
   const setSuccessMsgWrapper = (msg, clearTime = 3000) => {
     setSuccessMsg(msg);
     setTimeout(() => setSuccessMsg(null), clearTime);
-  }
+  };
 
   const setErrorMsgWrapper = (msg, clearTime = 3000) => {
     setErrorMsg(msg);
     setTimeout(() => setErrorMsg(null), clearTime);
-  }
+  };
 
   useEffect(() => {
     const fetchInitialBlogs = async () => {
@@ -72,7 +72,7 @@ const App = () => {
       const res = await blogService.updateLikes(id, likes);
       const newBlogs = blogs.map(b => b.id !== res.id ? b : res).sort((a, b) => {
         return b.likes - a.likes;
-      })
+      });
       setBlogs(newBlogs);
       setSuccessMsgWrapper(`Liked ${res.title} by ${res.author}`);
     } catch (e) {
@@ -88,7 +88,7 @@ const App = () => {
           const res = await blogService.deleteBlog(id);
           if (res.status === 204) {
             setBlogs(blogs.filter((b) => b.id !== id));
-            setSuccessMsgWrapper(`Deleted`);
+            setSuccessMsgWrapper(`Deleted ${blog.title}`);
           } else {
             setErrorMsgWrapper('Unknown error');
           }
@@ -103,16 +103,16 @@ const App = () => {
     blogService.setToken(null);
     setUser(null);
     setSuccessMsgWrapper('Logged out successfully');
-  }
+  };
   if (user === null) {
     return (
       <>
-      <messages.ErrorMessage msg={errorMsg} />
-      <messages.SuccessMessage msg={successMsg} />
-      <h1>Login to the application</h1>
-      <Login
-        formSubmitHandler={loginSubmitHandler}
-      />
+        <messages.ErrorMessage msg={errorMsg} />
+        <messages.SuccessMessage msg={successMsg} />
+        <h1>Login to the application</h1>
+        <Login
+          formSubmitHandler={loginSubmitHandler}
+        />
       </>
     );
   }
@@ -123,7 +123,7 @@ const App = () => {
       <h2>Blogs</h2>
       <Logout user={user} logoutHandler={logoutHandler} />
       {blogs.map(blog =>
-        <Blog 
+        <Blog
           key={blog.id}
           data={blog}
           updateLikesHandler={updateLikesHandler}
