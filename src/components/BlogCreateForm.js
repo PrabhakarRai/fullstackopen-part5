@@ -23,7 +23,7 @@ const BlogCreateForm = ({ formSubmitHandler }) => {
   };
 
   return (
-    <form onSubmit={submitHandler}>
+    <form onSubmit={submitHandler} className='blogCreateForm'>
       <div>
         <label htmlFor={'author'}>Author : </label>
         <input required={true} type='text' value={author} id={'author'} name='author' onChange={authorHandler} />

@@ -1,9 +1,31 @@
 import React,  { useState } from 'react';
+
+const BlogDetails = ({
+  visible,
+  id,
+  url,
+  likes,
+  createdByUser,
+  loggedInUser,
+  handleLikeClick,
+  handleDeleteClick,
+}) => {
+  if (!visible) {
+    return null;
+  }
+  return (
+    <div className='blogDetails'>
+      <span> URL ---: <a href={url} target={'_blank'} rel={'noreferrer'}>{url}</a></span><br />
+      <span> Likes -: <b>{likes}</b></span><br />
+      <button onClick={handleLikeClick(id, likes + 1)}>Like This Blog</button>
+      {loggedInUser === createdByUser ? <button onClick={handleDeleteClick(id)}>Delete</button> : ''}
+    </div>
+  );
+};
+
 const Blog = ({ data, username, updateLikesHandler, deleteBlogHandler }) => {
   const [visible, setVisible] = useState(false);
-  const [likeText, setLikeText] = useState('Like');
 
-  const visibility = { display: visible ? '' : 'none' };
   const toggleText = visible ? 'hide' : 'view';
 
   const blogStyle = {
@@ -18,25 +40,25 @@ const Blog = ({ data, username, updateLikesHandler, deleteBlogHandler }) => {
     setVisible(!visible);
   };
   const handleLikeClick = (id, likes) => () => {
-    if (likeText === 'Like') {
-      updateLikesHandler(id, likes);
-    }
-    setLikeText('Liked');
+    updateLikesHandler(id, likes);
   };
   const handleDeleteClick = (id) => () => {
     deleteBlogHandler(id);
   };
   return (
-    <div style={blogStyle}>
-      <span>{data.title} </span>
+    <div style={blogStyle} className='blog'>
+      <span>{data.title} - {data.author} </span>
       <button onClick={handleToggleVisibility}>{toggleText}</button>
-      <div style={visibility}>
-        <span> URL ---: <a href={data.url} target={'_blank'} rel={'noreferrer'}>{data.url}</a></span><br />
-        <span> Author : <i>{data.author}</i></span><br />
-        <span> Likes -: <b>{data.likes}</b></span><br />
-        <button onClick={handleLikeClick(data.id, data.likes + 1)}>{likeText}</button>
-        {username === data.user.username ? <button onClick={handleDeleteClick(data.id)}>Delete</button> : ''}
-      </div>
+      <BlogDetails
+        visible={visible}
+        id={data.id}
+        url={data.url}
+        likes={data.likes}
+        createdByUser={data.user.username}
+        loggedInUser={username}
+        handleLikeClick={handleLikeClick}
+        handleDeleteClick={handleDeleteClick}
+      />
     </div>
   );
 };
